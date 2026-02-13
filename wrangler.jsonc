@@ -4,7 +4,7 @@
  */
  {
 	"$schema": "node_modules/wrangler/config-schema.json",
-	"name": "vite-cf-do-runner",
+	"name": "forensic-semantic-ne-gn4i265z-zudaqvgcosio",
 	"main": "worker/index.ts",
 	"compatibility_date": "2025-04-24",
 	"assets": {
