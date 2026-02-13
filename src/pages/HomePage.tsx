@@ -1,138 +1,158 @@
-// Home page of the app.
-// Currently a demo placeholder "please wait" screen.
-// Replace this file with your actual app UI. Do not delete it to use some other file as homepage. Simply replace the entire contents of this file.
-
-import { useEffect, useMemo, useState } from 'react'
-import { Sparkles } from 'lucide-react'
-
-import { ThemeToggle } from '@/components/ThemeToggle'
-import { HAS_TEMPLATE_DEMO, TemplateDemo } from '@/components/TemplateDemo'
-import { Button } from '@/components/ui/button'
-import { Toaster, toast } from '@/components/ui/sonner'
-
-function formatDuration(ms: number): string {
-  const total = Math.max(0, Math.floor(ms / 1000))
-  const m = Math.floor(total / 60)
-  const s = total % 60
-  return `${m}:${s.toString().padStart(2, '0')}`
-}
-
+import React from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { 
+  Activity, 
+  Cpu, 
+  Clock, 
+  Database, 
+  TrendingUp, 
+  AlertCircle 
+} from 'lucide-react';
+import { 
+  AreaChart, 
+  Area, 
+  XAxis, 
+  YAxis, 
+  CartesianGrid, 
+  Tooltip, 
+  ResponsiveContainer 
+} from 'recharts';
+import { AppLayout } from '@/components/layout/AppLayout';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { api } from '@/lib/api-client';
+import type { MetricPoint } from '@shared/types';
 export function HomePage() {
-  const [coins, setCoins] = useState(0)
-  const [isRunning, setIsRunning] = useState(false)
-  const [startedAt, setStartedAt] = useState<number | null>(null)
-  const [elapsedMs, setElapsedMs] = useState(0)
-
-  useEffect(() => {
-    if (!isRunning || startedAt === null) return
-
-    const t = setInterval(() => {
-      setElapsedMs(Date.now() - startedAt)
-    }, 250)
-
-    return () => clearInterval(t)
-  }, [isRunning, startedAt])
-
-  const formatted = useMemo(() => formatDuration(elapsedMs), [elapsedMs])
-
-  const onPleaseWait = () => {
-    setCoins((c) => c + 1)
-
-    if (!isRunning) {
-      // Resume from the current elapsed time
-      setStartedAt(Date.now() - elapsedMs)
-      setIsRunning(true)
-      toast.success('Building your app…', {
-        description: "Hang tight — we're setting everything up.",
-      })
-      return
-    }
-
-    setIsRunning(false)
-    toast.info('Still working…', {
-      description: 'You can come back in a moment.',
-    })
-  }
-
-  const onReset = () => {
-    setCoins(0)
-    setIsRunning(false)
-    setStartedAt(null)
-    setElapsedMs(0)
-    toast('Reset complete')
-  }
-
-  const onAddCoin = () => {
-    setCoins((c) => c + 1)
-    toast('Coin added')
-  }
-
+  const { data: health, isLoading } = useQuery({
+    queryKey: ['health-extended'],
+    queryFn: () => api<{ 
+      status: string; 
+      apiLatency: number; 
+      memoryUsage: number; 
+      metrics: MetricPoint[] 
+    }>('/api/health/extended'),
+    refetchInterval: 10000
+  });
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-background text-foreground p-4 overflow-hidden relative">
-      <ThemeToggle />
-      <div className="absolute inset-0 bg-gradient-rainbow opacity-10 dark:opacity-20 pointer-events-none" />
-
-      <div className="text-center space-y-8 relative z-10 animate-fade-in w-full">
-        <div className="flex justify-center">
-          <div className="w-16 h-16 rounded-2xl bg-gradient-primary flex items-center justify-center shadow-primary floating">
-            <Sparkles className="w-8 h-8 text-white rotating" />
+    <AppLayout container>
+      <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
+        <header className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight">Nexus Dashboard</h1>
+            <p className="text-muted-foreground font-mono text-sm">Real-time system observability and forensic status.</p>
           </div>
-        </div>
-
-        <div className="space-y-3">
-          <h1 className="text-5xl md:text-7xl font-display font-bold text-balance leading-tight">
-            Creating your <span className="text-gradient">app</span>
-          </h1>
-          <p className="text-lg md:text-xl text-muted-foreground max-w-xl mx-auto text-pretty">
-            Your application would be ready soon.
-          </p>
-        </div>
-
-        {HAS_TEMPLATE_DEMO ? (
-          <div className="max-w-5xl mx-auto text-left">
-            <TemplateDemo />
+          <div className="flex items-center gap-3">
+            <Badge variant={health?.status === 'healthy' ? 'default' : 'destructive'} className="h-6 gap-1 px-2 font-mono">
+              <span className={health?.status === 'healthy' ? 'animate-pulse' : ''}>��</span>
+              {health?.status?.toUpperCase() || 'OFFLINE'}
+            </Badge>
+            <span className="text-xs text-muted-foreground font-mono">NODE_ID: 0x9AF4B</span>
           </div>
-        ) : (
-          <>
-            <div className="flex justify-center gap-4">
-              <Button
-                size="lg"
-                onClick={onPleaseWait}
-                className="btn-gradient px-8 py-4 text-lg font-semibold hover:-translate-y-0.5 transition-all duration-200"
-                aria-live="polite"
-              >
-                Please Wait
-              </Button>
-            </div>
-
-            <div className="flex items-center justify-center gap-6 text-sm text-muted-foreground">
-              <div>
-                Time elapsed:{' '}
-                <span className="font-medium tabular-nums text-foreground">{formatted}</span>
-              </div>
-              <div>
-                Coins:{' '}
-                <span className="font-medium tabular-nums text-foreground">{coins}</span>
-              </div>
-            </div>
-
-            <div className="flex justify-center gap-2">
-              <Button variant="outline" size="sm" onClick={onReset}>
-                Reset
-              </Button>
-              <Button variant="outline" size="sm" onClick={onAddCoin}>
-                Add Coin
-              </Button>
-            </div>
-          </>
-        )}
+        </header>
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+          <StatCard 
+            title="Avg Latency" 
+            value={`${health?.apiLatency ?? '--'}ms`} 
+            desc="Global Edge response time" 
+            icon={Clock} 
+          />
+          <StatCard 
+            title="Throughput" 
+            value="1.2k" 
+            desc="Requests per minute" 
+            icon={TrendingUp} 
+            trend="+12%"
+          />
+          <StatCard 
+            title="Memory Load" 
+            value={`${health?.memoryUsage ?? '--'}%`} 
+            desc="Durable Object state usage" 
+            icon={Database} 
+          />
+          <StatCard 
+            title="Error Rate" 
+            value="0.02%" 
+            desc="Failed transactions (24h)" 
+            icon={AlertCircle} 
+            trend="-2%"
+          />
+        </div>
+        <div className="grid gap-4 md:grid-cols-7">
+          <Card className="md:col-span-4 bg-card/50 backdrop-blur-sm border-border/50 shadow-soft">
+            <CardHeader>
+              <CardTitle className="text-base font-medium">Request Throughput</CardTitle>
+              <CardDescription>Real-time API traffic monitoring</CardDescription>
+            </CardHeader>
+            <CardContent className="h-[300px]">
+              <ResponsiveContainer width="100%" height="100%">
+                <AreaChart data={health?.metrics ?? []}>
+                  <defs>
+                    <linearGradient id="colorReq" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.3}/>
+                      <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0}/>
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border))" />
+                  <XAxis dataKey="time" stroke="hsl(var(--muted-foreground))" fontSize={10} tickLine={false} axisLine={false} />
+                  <YAxis stroke="hsl(var(--muted-foreground))" fontSize={10} tickLine={false} axisLine={false} />
+                  <Tooltip 
+                    contentStyle={{ backgroundColor: 'hsl(var(--background))', border: '1px solid hsl(var(--border))', borderRadius: '8px' }}
+                    labelStyle={{ color: 'hsl(var(--foreground))' }}
+                  />
+                  <Area type="monotone" dataKey="requests" stroke="hsl(var(--primary))" fillOpacity={1} fill="url(#colorReq)" />
+                </AreaChart>
+              </ResponsiveContainer>
+            </CardContent>
+          </Card>
+          <Card className="md:col-span-3 bg-card/50 backdrop-blur-sm border-border/50 shadow-soft">
+            <CardHeader>
+              <CardTitle className="text-base font-medium">Active Monitoring</CardTitle>
+              <CardDescription>System resource distribution</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <HealthItem label="API Runtime" status="Nominal" value="4ms" />
+              <HealthItem label="DO Consistency" status="Verified" value="100%" />
+              <HealthItem label="Audit Pipeline" status="Active" value="Async" />
+              <HealthItem label="Memory Index" status="Optimized" value="O(log n)" />
+            </CardContent>
+          </Card>
+        </div>
       </div>
-
-      <footer className="absolute bottom-8 text-center text-muted-foreground/80">
-        <p>Powered by Cloudflare</p>
-      </footer>
-
-      <Toaster richColors closeButton />
+    </AppLayout>
+  );
+}
+function StatCard({ title, value, desc, icon: Icon, trend }: any) {
+  return (
+    <Card className="bg-card/50 border-border/50 hover:bg-card/80 transition-colors shadow-soft">
+      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+        <CardTitle className="text-sm font-medium text-muted-foreground">{title}</CardTitle>
+        <Icon className="h-4 w-4 text-muted-foreground/60" />
+      </CardHeader>
+      <CardContent>
+        <div className="text-2xl font-bold tracking-tight">{value}</div>
+        <div className="flex items-center gap-2 mt-1">
+          <p className="text-xs text-muted-foreground">{desc}</p>
+          {trend && (
+            <span className={cn("text-[10px] font-bold px-1 rounded", trend.startsWith('+') ? "text-emerald-500 bg-emerald-500/10" : "text-rose-500 bg-rose-500/10")}>
+              {trend}
+            </span>
+          )}
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+function HealthItem({ label, status, value }: { label: string; status: string; value: string }) {
+  return (
+    <div className="flex items-center justify-between border-b border-border/40 pb-3 last:border-0 last:pb-0">
+      <div className="space-y-1">
+        <p className="text-sm font-medium leading-none">{label}</p>
+        <p className="text-xs text-muted-foreground">{status}</p>
+      </div>
+      <div className="text-sm font-mono font-medium text-primary">{value}</div>
     </div>
-  )
+  );
+}
+function cn(...classes: string[]) {
+  return classes.filter(Boolean).join(' ');
 }

@@ -3,22 +3,42 @@ export interface ApiResponse<T = unknown> {
   data?: T;
   error?: string;
 }
-
-// Minimal real-world chat example types (shared by frontend and worker)
 export interface User {
   id: string;
   name: string;
 }
-
-export interface Chat {
-  id: string;
-  title: string;
+export interface SystemHealth {
+  status: 'healthy' | 'degraded' | 'critical';
+  uptime: number;
+  apiLatency: number;
+  memoryUsage: number;
+  timestamp: string;
 }
-
-export interface ChatMessage {
+export interface SemanticMemory {
   id: string;
-  chatId: string;
-  userId: string;
-  text: string;
-  ts: number; // epoch millis
+  content: string;
+  vector: number[];
+  metadata: Record<string, unknown>;
+  createdAt: number;
+}
+export interface Checkpoint {
+  id: string;
+  name: string;
+  description: string;
+  hash: string;
+  createdAt: number;
+}
+export interface AuditLog {
+  id: string;
+  action: string;
+  actor: string;
+  resource: string;
+  timestamp: number;
+  status: 'success' | 'failure';
+}
+export interface MetricPoint {
+  time: string;
+  requests: number;
+  latency: number;
+  errors: number;
 }

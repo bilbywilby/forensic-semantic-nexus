@@ -1,72 +1,90 @@
-/* This is a demo sidebar. **COMPULSORY** Edit this file to customize the sidebar OR remove it from appLayout OR don't use appLayout at all */
 import React from "react";
-import { Home, Layers, Compass, Star, Settings, LifeBuoy } from "lucide-react";
+import { 
+  LayoutDashboard, 
+  Database, 
+  ShieldCheck, 
+  FileText, 
+  Settings, 
+  Activity 
+} from "lucide-react";
+import { Link, useLocation } from "react-router-dom";
 import {
   Sidebar,
   SidebarContent,
   SidebarFooter,
   SidebarGroup,
   SidebarHeader,
-  SidebarSeparator,
-  SidebarInput,
   SidebarGroupLabel,
   SidebarMenu,
   SidebarMenuItem,
   SidebarMenuButton,
-  SidebarMenuAction,
-  SidebarMenuBadge,
 } from "@/components/ui/sidebar";
-
+import { cn } from "@/lib/utils";
+const NAV_ITEMS = [
+  { label: "Dashboard", icon: LayoutDashboard, href: "/" },
+  { label: "Memory Inspector", icon: Database, href: "/memory" },
+  { label: "Checkpoints", icon: ShieldCheck, href: "/checkpoints" },
+  { label: "Audit Logs", icon: FileText, href: "/logs" },
+  { label: "System Health", icon: Activity, href: "/health" },
+];
 export function AppSidebar(): JSX.Element {
+  const location = useLocation();
   return (
-    <Sidebar>
-      <SidebarHeader>
-        <div className="flex items-center gap-2 px-2 py-1">
-          <div className="h-6 w-6 rounded-md bg-gradient-to-br from-indigo-500 to-purple-500" />
-          <span className="text-sm font-medium">Demo Sidebar</span>
+    <Sidebar className="border-r border-border/50">
+      <SidebarHeader className="border-b border-border/50 pb-4">
+        <div className="flex items-center gap-3 px-3 py-4">
+          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground shadow-glow">
+            <ShieldCheck className="h-5 w-5" />
+          </div>
+          <div className="flex flex-col">
+            <span className="text-sm font-bold tracking-tight text-foreground">Forensic Nexus</span>
+            <span className="text-[10px] font-mono text-muted-foreground uppercase tracking-widest">Edge Console v1.0</span>
+          </div>
         </div>
-        <SidebarInput placeholder="Search" />
       </SidebarHeader>
       <SidebarContent>
         <SidebarGroup>
-          <SidebarMenu>
-            <SidebarMenuItem>
-              <SidebarMenuButton asChild isActive>
-                <a href="#"><Home /> <span>Home</span></a>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-            <SidebarMenuItem>
-              <SidebarMenuButton asChild>
-                <a href="#"><Layers /> <span>Projects</span></a>
-              </SidebarMenuButton>
-              <SidebarMenuAction>
-                <Star className="size-4" />
-              </SidebarMenuAction>
-            </SidebarMenuItem>
-            <SidebarMenuItem>
-              <SidebarMenuButton asChild>
-                <a href="#"><Compass /> <span>Explore</span></a>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-          </SidebarMenu>
-        </SidebarGroup>
-
-        <SidebarSeparator />
-
-        <SidebarGroup>
-          <SidebarGroupLabel>Quick Links</SidebarGroupLabel>
-          <SidebarMenu>
-            <SidebarMenuItem>
-              <SidebarMenuButton asChild>
-                <a href="#"><Star /> <span>Starred</span></a>
-              </SidebarMenuButton>
-              <SidebarMenuBadge>5</SidebarMenuBadge>
-            </SidebarMenuItem>
+          <SidebarGroupLabel className="px-4 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/70">
+            Navigation
+          </SidebarGroupLabel>
+          <SidebarMenu className="px-2 space-y-1">
+            {NAV_ITEMS.map((item) => (
+              <SidebarMenuItem key={item.href}>
+                <SidebarMenuButton 
+                  asChild 
+                  isActive={location.pathname === item.href}
+                  className={cn(
+                    "transition-all duration-200",
+                    location.pathname === item.href ? "bg-accent/50 text-accent-foreground shadow-sm" : "hover:bg-accent/30"
+                  )}
+                >
+                  <Link to={item.href} className="flex items-center gap-3">
+                    <item.icon className={cn("h-4 w-4", location.pathname === item.href ? "text-primary" : "text-muted-foreground")} />
+                    <span className="text-sm font-medium">{item.label}</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            ))}
           </SidebarMenu>
         </SidebarGroup>
       </SidebarContent>
-      <SidebarFooter>
-        <div className="px-2 text-xs text-muted-foreground">A simple shadcn sidebar</div>
+      <SidebarFooter className="border-t border-border/50 p-4">
+        <SidebarMenu>
+          <SidebarMenuItem>
+            <SidebarMenuButton asChild className="hover:bg-accent/30">
+              <Link to="/settings" className="flex items-center gap-3">
+                <Settings className="h-4 w-4 text-muted-foreground" />
+                <span className="text-sm font-medium">Settings</span>
+              </Link>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+        </SidebarMenu>
+        <div className="mt-4 px-2">
+          <div className="rounded-md bg-muted/50 p-2 text-[10px] font-mono text-muted-foreground leading-tight">
+            NODE_STATE: CONSISTENT<br />
+            KV_SYNC: ACTIVE
+          </div>
+        </div>
       </SidebarFooter>
     </Sidebar>
   );
