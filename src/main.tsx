@@ -13,6 +13,9 @@ import { RouteErrorBoundary } from '@/components/RouteErrorBoundary';
 import '@/index.css'
 import { HomePage } from '@/pages/HomePage'
 import { MemoryInspector } from '@/pages/MemoryInspector'
+import { CheckpointManager } from '@/pages/CheckpointManager'
+import { AuditLogs } from '@/pages/AuditLogs'
+import { HealthMonitor } from '@/pages/HealthMonitor'
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -32,20 +35,24 @@ const router = createBrowserRouter([
     element: <MemoryInspector />,
     errorElement: <RouteErrorBoundary />,
   },
-  // Placeholders for future phases
   {
     path: "/checkpoints",
-    element: <div className="p-8 text-center text-muted-foreground font-mono">Module Loaded: CHECKPOINT_MANAGER (Pending UI Implementation)</div>,
+    element: <CheckpointManager />,
     errorElement: <RouteErrorBoundary />,
   },
   {
     path: "/logs",
-    element: <div className="p-8 text-center text-muted-foreground font-mono">Module Loaded: AUDIT_TRAIL (Pending UI Implementation)</div>,
+    element: <AuditLogs />,
     errorElement: <RouteErrorBoundary />,
   },
   {
     path: "/health",
-    element: <div className="p-8 text-center text-muted-foreground font-mono">Module Loaded: HEALTH_OBSERVABILITY (Pending UI Implementation)</div>,
+    element: <HealthMonitor />,
+    errorElement: <RouteErrorBoundary />,
+  },
+  {
+    path: "/settings",
+    element: <div className="p-8 text-center text-muted-foreground font-mono">Module Loaded: SETTINGS (Standard Configuration)</div>,
     errorElement: <RouteErrorBoundary />,
   },
 ]);

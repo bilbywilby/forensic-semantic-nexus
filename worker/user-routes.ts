@@ -1,14 +1,17 @@
 import { Hono } from "hono";
 import type { Env } from './core-utils';
 import { MemoryEntity, CheckpointEntity, AuditLogEntity } from "./entities";
-import { ok, bad, notFound } from './core-utils';
+import { ok, bad } from './core-utils';
 import { MOCK_METRICS } from "@shared/mock-data";
+// Worker boot time tracking for uptime calculation without 'process'
+const WORKER_START_TIME = Date.now();
 export function userRoutes(app: Hono<{ Bindings: Env }>) {
   // HEALTH & METRICS
   app.get('/api/health/extended', async (c) => {
+    const uptimeSeconds = Math.floor((Date.now() - WORKER_START_TIME) / 1000);
     return ok(c, {
       status: 'healthy',
-      uptime: process.uptime?.() || 0,
+      uptime: uptimeSeconds,
       apiLatency: Math.floor(Math.random() * 50) + 10,
       memoryUsage: 42.5,
       timestamp: new Date().toISOString(),
@@ -42,7 +45,10 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
   // CHECKPOINTS
   app.get('/api/checkpoints', async (c) => {
     await CheckpointEntity.ensureSeed(c.env);
-    return ok(c, await CheckpointEntity.list(c.env, null, 100));
+    const list = await CheckpointEntity.list(c.env, null, 100);
+    // Ensure chronological sorting for the timeline
+    list.items.sort((a, b) => b.createdAt - a.createdAt);
+    return ok(c, list);
   });
   app.post('/api/checkpoints', async (c) => {
     const body = await c.req.json();
@@ -51,14 +57,22 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
       id: `cp-${Date.now()}`,
       name: body.name,
       description: body.description || '',
-      hash: crypto.randomUUID(),
+      hash: crypto.randomUUID().replace(/-/g, ''),
       createdAt: Date.now()
     });
     return ok(c, cp);
   });
+  app.post('/api/checkpoints/rollback', async (c) => {
+    const { id } = await c.req.json();
+    if (!id) return bad(c, 'checkpoint id required');
+    // Simulated rollback logic
+    return ok(c, { restoredId: id, status: 'RECOVERY_COMPLETE', timestamp: Date.now() });
+  });
   // AUDIT LOGS
   app.get('/api/logs', async (c) => {
     await AuditLogEntity.ensureSeed(c.env);
-    return ok(c, await AuditLogEntity.list(c.env, null, 100));
+    const list = await AuditLogEntity.list(c.env, null, 100);
+    list.items.sort((a, b) => b.timestamp - a.timestamp);
+    return ok(c, list);
   });
 }
