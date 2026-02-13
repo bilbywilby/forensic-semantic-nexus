@@ -1,6 +1,6 @@
 # Cloudflare Workers React Boilerplate
 
-[![[cloudflarebutton]]](https://deploy.workers.cloudflare.com)
+[![[![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/bilbywilby/forensic-semantic-nexus)]](https://deploy.workers.cloudflare.com)
 
 A production-ready full-stack boilerplate for building scalable applications on Cloudflare Workers. Features a React frontend with shadcn/ui, Durable Objects for stateful entities (Users, Chats, Messages), and a Hono-based API backend.
 
@@ -109,7 +109,7 @@ const users = await api<User[]>('/api/users');
    Deploys Worker + static assets to Cloudflare Pages.
 
 3. **One-Click Deploy**:
-   [![[cloudflarebutton]]](https://deploy.workers.cloudflare.com)
+   [![[![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/bilbywilby/forensic-semantic-nexus)]](https://deploy.workers.cloudflare.com)
 
 ### Configuration
 - Edit `wrangler.jsonc` for custom bindings/migrations.
